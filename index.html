@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clínica Veterinaria Europa — Clínica Veterinaria en Fuenlabrada, Madrid</title>
+<meta name="description" content="Demo web inmersiva para Clínica Veterinaria Europa, clínica veterinaria en Fuenlabrada, Madrid.">
+<link rel="stylesheet" href="motion.css">
+<style>
+:root{
+  --mk-primario:#153655;
+  --mk-secundario:#5aa469;
+  --mk-fondo:#eef6fb;
+  --mk-texto:#13283a;
+  --ink:#11324a;
+  --soft:#52677b;
+  --surface:#ffffff;
+  --accent:#5aa469;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--mk-fondo);color:var(--mk-texto);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+body{min-width:320px}
+a{color:inherit}
+
+.topbar{position:fixed;top:0;left:0;right:0;z-index:50;height:66px;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:13px 24px;background:rgba(255,255,255,.95);border-bottom:1px solid rgba(21,54,85,.15);box-shadow:0 12px 34px rgba(17,50,74,.08);backdrop-filter:blur(12px)}
+.topbar__brand{font-size:clamp(15px,2vw,20px);font-weight:900;letter-spacing:-.025em;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar__cta{flex:0 0 auto;text-decoration:none;color:#fff;background:var(--mk-primario);padding:10px 18px;border-radius:999px;font-size:14px;font-weight:850;box-shadow:0 12px 28px rgba(21,54,85,.22)}
+
+/* Versión robusta: el contenedor da recorrido y el escenario queda fixed mientras dura la película. No hay scroll hijacking: el usuario sigue usando scroll nativo. */
+.mk-film{position:relative;height:2180vh;background:var(--mk-fondo)}
+.mk-film-stage{position:fixed;inset:0;width:100vw;height:100vh;overflow:hidden;display:grid;place-items:center;background:var(--mk-fondo);z-index:1;perspective:1100px;perspective-origin:50% 46%;contain:layout paint style}
+.mk-film-stage.is-before{position:absolute;top:0;bottom:auto}
+.mk-film-stage.is-after{position:absolute;top:auto;bottom:0}
+.mk-film-stage.is-active{position:fixed;top:0;bottom:auto}
+.mk-film-stage.is-after .mk-zshot{opacity:0;pointer-events:none}
+
+.mk-zshot{--f:calc(var(--mk-p,0) * 13 - var(--zi,0));position:absolute;inset:0;display:grid;place-items:center;padding:88px 24px 54px;text-align:center;transform:translateZ(calc(var(--f) * 760px));opacity:var(--shot-opacity,0);pointer-events:none;will-change:transform,opacity;isolation:isolate;transition:opacity .18s ease-out}
+.mk-zshot[data-live]{pointer-events:auto}
+.mk-zdepth{transform:translateZ(var(--z,0px));will-change:transform}
+
+.clean-hero{background:linear-gradient(135deg,#edf8ff 0%,#fff 48%,#e9f6ee 100%)}
+.clean-hero::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(17,50,74,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(17,50,74,.045) 1px,transparent 1px);background-size:48px 48px;mask-image:radial-gradient(circle at center,#000 34%,transparent 72%);z-index:0}
+.clean-hero::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 18% 18%,rgba(21,54,85,.18),transparent 34%),radial-gradient(circle at 82% 74%,rgba(90,164,105,.16),transparent 32%);z-index:1}
+.hero-card{position:relative;z-index:2;width:min(820px,92vw);padding:clamp(36px,6vw,70px);border-radius:32px;background:rgba(17,50,74,.97);border:1px solid rgba(255,255,255,.26);box-shadow:0 38px 110px rgba(17,50,74,.31)}
+.hero-card h1{margin:0;color:#fff;font-size:clamp(36px,6.6vw,78px);line-height:1.02;letter-spacing:-.055em;font-weight:950}
+.hero-kicker{display:block;margin:0 0 18px;color:#8ec9f0;font-size:13px;line-height:1.2;letter-spacing:.16em;text-transform:uppercase;font-weight:950}
+.scroll-note{display:inline-flex;align-items:center;justify-content:center;gap:10px;margin-top:24px;color:#dcefff;font-size:clamp(12px,1.4vw,15px);font-weight:900;letter-spacing:.14em;text-transform:uppercase;opacity:.9}
+.scroll-note i{display:block;width:8px;height:8px;border-radius:999px;background:var(--accent);box-shadow:0 0 0 8px rgba(90,164,105,.17)}
+
+.bg{position:absolute;inset:0;z-index:0;overflow:hidden;background:#ddebf4}
+.bg img{width:100%;height:100%;object-fit:cover;filter:saturate(1.02) contrast(1.03)}
+.bg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(238,246,251,.86),rgba(238,246,251,.34),rgba(238,246,251,.76))}
+.bg.dark::after{background:linear-gradient(90deg,rgba(17,50,74,.78),rgba(17,50,74,.22),rgba(17,50,74,.70))}
+.photo-shot .bg img{transform:scale(1.03);filter:saturate(1.14) contrast(1.06)}
+.photo-shot .bg::after{background:linear-gradient(90deg,rgba(238,246,251,.18) 0%,rgba(238,246,251,.08) 45%,rgba(238,246,251,.78) 100%)}
+.photo-shot.dark-photo .bg::after{background:linear-gradient(90deg,rgba(17,50,74,.18) 0%,rgba(17,50,74,.12) 45%,rgba(17,50,74,.82) 100%)}
+.photo-shot .panel,.photo-shot .service{width:min(500px,88vw);margin-left:auto;margin-right:clamp(22px,7vw,96px);text-align:left;background:rgba(255,255,255,.90);backdrop-filter:blur(10px)}
+.photo-shot.dark-photo .panel,.photo-shot.dark-photo .service{background:rgba(17,50,74,.88)}
+.panel{position:relative;z-index:2;width:min(880px,92vw);padding:clamp(30px,5vw,62px);border-radius:32px;background:rgba(255,255,255,.96);border:1px solid rgba(21,54,85,.15);box-shadow:0 34px 100px rgba(17,50,74,.16)}
+.panel.dark{background:rgba(17,50,74,.94);border-color:rgba(255,255,255,.22);box-shadow:0 38px 110px rgba(17,50,74,.34)}
+.kicker{display:block;margin:0 0 16px;color:var(--mk-primario);font-size:13px;line-height:1.2;letter-spacing:.16em;text-transform:uppercase;font-weight:950}.dark .kicker{color:#c7e5ff}
+h2,h3{margin:0 auto 18px;color:var(--ink);font-size:clamp(32px,5vw,60px);line-height:1.05;letter-spacing:-.047em;font-weight:920;max-width:920px}.dark h2,.dark h3,.dark p{color:#fff}
+p{margin:0 auto;max-width:720px;color:#40596f;font-size:clamp(17px,2.05vw,24px);line-height:1.58}.dark p{color:#eaf5ff}
+.service{position:relative;z-index:2;width:min(590px,92vw);padding:clamp(30px,5vw,58px);text-align:left;border-radius:30px;background:rgba(255,255,255,.985);border:1px solid rgba(21,54,85,.16);box-shadow:0 34px 100px rgba(17,50,74,.16)}
+.service .num{display:block;margin:0 0 22px;color:var(--mk-primario);opacity:.14;font-size:clamp(76px,12vw,132px);line-height:.78;letter-spacing:-.085em;font-weight:950}.service h3{margin:0 0 15px;font-size:clamp(28px,4.2vw,46px);max-width:none}.service p{margin:0;max-width:43ch;color:#40596f;font-size:clamp(16px,1.85vw,21px);line-height:1.58}
+.cta{display:inline-flex;align-items:center;justify-content:center;gap:12px;margin-top:30px;padding:18px 30px;border-radius:999px;background:var(--accent);color:#fff;text-decoration:none;font-size:clamp(17px,2vw,22px);font-weight:900;box-shadow:0 17px 38px rgba(90,164,105,.25)}.cta.blue{background:var(--mk-primario);box-shadow:0 17px 38px rgba(21,54,85,.25)}.cta svg{width:26px;height:26px;flex:0 0 auto}
+.footer{position:relative;z-index:3;background:#fff;color:var(--soft);padding:46px 24px;text-align:center;border-top:1px solid rgba(21,54,85,.15)}.footer p{font-size:14px;line-height:1.5;margin:6px auto;color:var(--soft)}.footer a{color:var(--mk-primario);text-decoration:none}.footer a:hover{text-decoration:underline}
+@media(max-width:760px){.topbar{height:62px;padding:12px 15px}.topbar__cta{padding:9px 14px;font-size:13px}.mk-zshot{padding:82px 18px 48px}.hero-card,.panel,.service{border-radius:24px}.photo-shot .panel,.photo-shot .service{margin:0 auto;width:min(360px,90vw);background:rgba(255,255,255,.92)}.photo-shot.dark-photo .panel,.photo-shot.dark-photo .service{background:rgba(17,50,74,.88)}.photo-shot .bg::after{background:linear-gradient(180deg,rgba(238,246,251,.06),rgba(238,246,251,.22),rgba(238,246,251,.88))}.hero-card h1{font-size:clamp(34px,10vw,58px)}.scroll-note{max-width:260px}.cta{width:100%;max-width:330px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar__brand">Clínica Veterinaria Europa</div>
+  <a class="topbar__cta" href="tel:916084205">916 08 42 05</a>
+</header>
+
+<main class="mk-film" data-mk-scrolly data-mk-shots="14" style="--mk-nshots:14;--mk-p:0">
+  <div class="mk-film-stage mk-tunnel is-before">
+    <article class="mk-zshot clean-hero" style="--zi:0;--shot-opacity:1" data-live>
+      <div class="hero-card">
+        <span class="hero-kicker">Clínica Veterinaria · Fuenlabrada, Madrid</span>
+        <h1>Clínica Veterinaria<br>Peludos · Clínica Veterinaria Europa</h1>
+        <div class="scroll-note"><i></i><span>Desliza para ver la propuesta</span></div>
+      </div>
+    </article>
+
+    <article class="mk-zshot photo-shot" style="--zi:1">
+      <div class="mk-zdepth bg" style="--z:-220px"><img src="https://images.unsplash.com/photo-1576201836106-db1758fd1c97?w=1800&q=85" alt=""></div>
+      <div class="mk-zdepth panel" style="--z:120px"><span class="kicker">Una web más clara</span><h2>Cuidado veterinario explicado sin ruido</h2><p>Una página que transmite confianza, ordena los servicios y deja clara la ubicación desde el móvil.</p></div>
+    </article>
+
+    <article class="mk-zshot photo-shot dark-photo" style="--zi:2">
+      <div class="mk-zdepth bg dark" style="--z:-230px"><img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=1800&q=85" alt=""></div>
+      <div class="mk-zdepth panel dark" style="--z:125px"><span class="kicker">Primer impacto</span><h2>Primero confianza. Después contacto.</h2><p>El visitante debe sentir que su mascota estará en buenas manos antes de decidir cómo contactar.</p></div>
+    </article>
+
+    <article class="mk-zshot photo-shot" style="--zi:3">
+      <div class="mk-zdepth bg" style="--z:-210px"><img src="https://images.unsplash.com/photo-1548681528-6a5c45b66b42?w=1800&q=85" alt=""></div>
+      <div class="mk-zdepth service" style="--z:120px"><span class="num">01</span><h3>Consultas veterinarias</h3><p>Revisiones, diagnóstico y seguimiento personalizado para cada mascota en Pinto.</p></div>
+    </article>
+
+    <article class="mk-zshot photo-shot" style="--zi:4"><div class="mk-zdepth bg" style="--z:-220px"><img src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=1800&q=85" alt=""></div><div class="mk-zdepth service" style="--z:120px"><span class="num">02</span><h3>Vacunación y prevención</h3><p>Protege a tu mascota durante todo el año con el calendario de vacunas y tratamientos preventivos.</p></div></article>
+
+    <article class="mk-zshot photo-shot" style="--zi:5">
+      <div class="mk-zdepth bg" style="--z:-210px"><img src="https://images.unsplash.com/photo-1615751072497-5f5169febe17?w=1800&q=85" alt=""></div>
+      <div class="mk-zdepth service" style="--z:120px"><span class="num">03</span><h3>Cirugía y tratamientos</h3><p>Atención profesional con equipamiento actualizado y cuidados postoperatorios cercanos.</p></div>
+    </article>
+
+    <article class="mk-zshot photo-shot" style="--zi:6"><div class="mk-zdepth bg" style="--z:-220px"><img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1800&q=85" alt=""></div><div class="mk-zdepth service" style="--z:120px"><span class="num">04</span><h3>Urgencias y seguimiento</h3><p>Mensajes directos para que el cliente sepa qué hacer cuando su mascota necesita ayuda rápida.</p></div></article>
+
+    <article class="mk-zshot photo-shot" style="--zi:7"><div class="mk-zdepth bg" style="--z:-220px"><img src="https://images.unsplash.com/photo-1592194996308-7b43878e84a6?w=1800&q=85" alt=""></div><div class="mk-zdepth service" style="--z:120px"><span class="num">05</span><h3>Servicios complementarios</h3><p>Peluquería, nutrición, analíticas y más servicios para el bienestar integral de tu mascota.</p></div></article>
+
+    <article class="mk-zshot photo-shot" style="--zi:8">
+      <div class="mk-zdepth bg" style="--z:-220px"><img src="https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=1800&q=85" alt=""></div>
+      <div class="mk-zdepth panel" style="--z:125px"><span class="kicker">Menos ruido, más acción</span><h2>Todo pensado para encontraros rápido</h2><p>La navegación guía desde la confianza inicial hasta la ubicación y el siguiente paso sin fricciones.</p></div>
+    </article>
+
+    <article class="mk-zshot photo-shot" style="--zi:9"><div class="mk-zdepth bg" style="--z:-220px"><img src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=1800&q=85" alt=""></div><div class="mk-zdepth panel" style="--z:120px"><h2>Fuenlabrada, Madrid</h2><p>Una presencia local clara para familias que buscan una clínica veterinaria de confianza cerca.</p></div></article>
+
+    <article class="mk-zshot photo-shot dark-photo" style="--zi:10"><div class="mk-zdepth bg dark" style="--z:-220px"><img src="https://images.unsplash.com/photo-1558788353-f76d92427f16?w=1800&q=85" alt=""></div><div class="mk-zdepth panel dark" style="--z:120px"><span class="kicker">Desde móvil</span><h2>Servicios y ubicación en segundos</h2><p>Sin hacer buscar al usuario. Sin menús confusos. Sin perder la confianza del cliente.</p></div></article>
+
+    <article class="mk-zshot photo-shot" style="--zi:11"><div class="mk-zdepth bg" style="--z:-220px"><img src="https://images.unsplash.com/photo-1601758124510-52d02ddb7cbd?w=1800&q=85" alt=""></div><div class="mk-zdepth panel" style="--z:120px"><span class="kicker">Siguiente paso</span><h2>Una presencia clara marca la diferencia</h2><p>Botones preparados para convertir visitas en llamadas y visitas reales a la clínica.</p></div></article>
+
+    <article class="mk-zshot" style="--zi:12">
+      <div class="mk-zdepth panel" style="--z:120px"><h2>Llámanos ahora</h2><p>Pide cita o consulta cualquier duda directamente.</p><a class="cta" href="tel:916084205"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 01.19 1.22 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.16a16 16 0 006.93 6.93l1.53-1.53a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"></path></svg>916 08 42 05</a></div>
+    </article>
+
+    <article class="mk-zshot" style="--zi:13">
+      <div class="mk-zdepth panel" style="--z:120px"><h2>Visítanos en Pinto</h2><p>Av. Pintor Antonio López, 1 · 28942 Fuenlabrada, Madrid</p><a class="cta blue" href="https://www.google.com/maps/search/?api=1&query=Clinica+Veterinaria+Europa+Fuenlabrada" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>Ver en Google Maps</a></div>
+    </article>
+  </div>
+</main>
+
+<footer class="footer">
+  <p><strong>Clínica Veterinaria Europa</strong> — Clínica Veterinaria en Fuenlabrada, Madrid</p>
+  <p>Av. Pintor Antonio López, 1 · 28942 Fuenlabrada, Madrid</p>
+  <p><a href="tel:916084205">916 08 42 05</a> · <a href="https://www.google.com/maps/search/?api=1&query=Clinica+Veterinaria+Europa+Fuenlabrada" target="_blank" rel="noopener">Ver ubicación en Google Maps</a></p>
+  <p>Demo orientativa preparada por Disflim con información pública disponible.</p>
+</footer>
+
+<script src="motion.js"></script>
+<script>
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+window.addEventListener('pageshow', function(){ if (window.scrollY < 2600) window.scrollTo(0,0); });
+(function(){
+  var film=document.querySelector('.mk-film');
+  var stage=document.querySelector('.mk-film-stage');
+  if(!film || !stage) return;
+  var shots=[].slice.call(stage.querySelectorAll('.mk-zshot'));
+  var n=shots.length || 14;
+  function setStage(mode){
+    stage.classList.remove('is-before','is-active','is-after');
+    stage.classList.add(mode);
+  }
+  function update(){
+    var start=film.offsetTop;
+    var total=Math.max(1, film.offsetHeight - window.innerHeight);
+    var raw=(window.scrollY - start) / total;
+    var p=Math.max(0, Math.min(1, raw));
+    film.style.setProperty('--mk-p', p.toFixed(4));
+    if(raw < 0){ setStage('is-before'); }
+    else if(raw > 1){ setStage('is-after'); }
+    else{ setStage('is-active'); }
+    var intro=0.050; // about one first scroll on the taller film
+    shots.forEach(function(shot){
+      var zi=parseFloat(shot.style.getPropertyValue('--zi')) || 0;
+      var f, opacity;
+      if(zi === 0){
+        opacity = p < intro ? 1 : Math.max(0, Math.min(1, (intro + 0.018 - p) / 0.018));
+      } else if(p < intro * 0.92){
+        opacity = 0;
+      } else {
+        var q=Math.max(0, Math.min(1, (p - intro) / (1 - intro)));
+        f=q*(n-2)-(zi-1);
+        var fadeIn=Math.max(0,Math.min(1,(f + 0.95) / 0.48));
+        var fadeOut=Math.max(0,Math.min(1,(0.72 - f) / 0.48));
+        opacity=Math.min(fadeIn,fadeOut);
+      }
+      shot.style.setProperty('--shot-opacity', opacity.toFixed(3));
+      if(opacity > 0.36) shot.setAttribute('data-live','');
+      else shot.removeAttribute('data-live');
+    });
+  }
+  addEventListener('scroll', update, {passive:true});
+  addEventListener('resize', update, {passive:true});
+  addEventListener('load', update);
+  requestAnimationFrame(update);
+  setTimeout(update,100);
+})();
+</script>
+</body>
+</html>
